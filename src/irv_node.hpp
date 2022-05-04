@@ -152,12 +152,15 @@ public:
    * \param path The path to this node, represented by a permutation on the
    * candidates.
    *
+   * \param approximate_dmnom A boolean value, if true we skip the multinomial
+   *  sampling step, sacrificing precision for numerical efficiency.
+   *
    * \param engine A PRNG for random sampling.
    *
    * \return A list of completed ballots sampled from the subtree.
    */
   std::list<IRVBallot> sample(int count, std::vector<int> path,
-                              std::mt19937 *engine);
+                              bool approximate_dmnom, std::mt19937 *engine);
 
   /*! \brief Updates the parameters in the sub-tree to obtain a posterior.
    *

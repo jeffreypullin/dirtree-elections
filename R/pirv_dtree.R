@@ -44,13 +44,13 @@ dirtree.pirv <- function(candidates, minDepth, alpha0 = 1.) {
 #' @param nBallots an integer representing the number of ballots to draw.
 #' @return A list with each element corresponding to a drawn ballot.
 #' @export
-samplePredictive <- function(dtree, nBallots) {
+samplePredictive <- function(dtree, nBallots, approximate.dmnom=FALSE) {
   stopifnot(class(dtree) %in% .dtree_classes)
   # Ensure nBallots > 0.
   if (nBallots <=0 || !is.numeric(nBallots)) {
     stop("nBallots must be an integer > 0")
   }
-  ballots = dtree$samplePredictive(as.integer(nBallots), gseed())
+  ballots = dtree$samplePredictive(as.integer(nBallots), approximate.dmnom, gseed())
   class(ballots) <- "PIRVBallots"
   return(ballots)
 }
@@ -63,7 +63,7 @@ samplePredictive <- function(dtree, nBallots) {
 #' @param nBallots an integer representing the number of ballots cast in total for each election.
 #' @return A NumericVector containing the probabilities for each candidate being elected.
 #' @export
-samplePosterior <- function(dtree, nElections, nBallots, nWinners=1) {
+samplePosterior <- function(dtree, nElections, nBallots, nWinners=1, approximate.dmnom=FALSE) {
   stopifnot(class(dtree) %in% .dtree_classes)
   return(
     dtree$samplePosterior(
@@ -71,6 +71,7 @@ samplePosterior <- function(dtree, nElections, nBallots, nWinners=1) {
       nBallots=nBallots,
       nWinners=nWinners,
       nBatches=nElections/2,
+      approximate.dmnom,
       gseed()
     )
   )

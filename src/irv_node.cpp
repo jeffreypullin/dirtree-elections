@@ -10,6 +10,7 @@
 
 std::list<IRVBallot> lazyIRVBallots(IRVParameters *params, int count,
                                     std::vector<int> path, int depth,
+                                    bool approximate_dmnom,
                                     std::mt19937 *engine) {
 
   // Get parameters
@@ -43,7 +44,8 @@ std::list<IRVBallot> lazyIRVBallots(IRVParameters *params, int count,
   alpha = new float[nOutcomes];
   for (auto i = 0; i < nOutcomes; ++i)
     alpha[i] = alpha0;
-  mnomCounts = rDirichletMultinomial(count, alpha, nOutcomes, engine);
+  mnomCounts =
+      rDirichletMultinomial(count, alpha, nOutcomes, approximate_dmnom, engine);
 
   // Add the ballots which terminate at this node.
   if (depth >= minDepth && mnomCounts[nOutcomes - 1] > 0) {
@@ -61,7 +63,8 @@ std::list<IRVBallot> lazyIRVBallots(IRVParameters *params, int count,
 
     // Update path for recursive sampling.
     std::swap(path[depth], path[depth + i]);
-    temp = lazyIRVBallots(params, mnomCounts[i], path, depth + 1, engine);
+    temp = lazyIRVBallots(params, mnomCounts[i], path, depth + 1,
+                          approximate_dmnom, engine);
     // Combine temp with output.
     out.splice(out.end(), temp);
     // Change the path back for further sampling.
@@ -98,6 +101,7 @@ IRVNode::~IRVNode() {
 }
 
 std::list<IRVBallot> IRVNode::sample(int count, std::vector<int> path,
+                                     bool approximate_dmnom,
                                      std::mt19937 *engine) {
 
   std::list<IRVBallot> temp = {};
@@ -114,7 +118,8 @@ std::list<IRVBallot> IRVNode::sample(int count, std::vector<int> path,
 
   // Get Dirichlet-multinomial counts for next-preference selections below
   // current node.
-  int *mnomCounts = rDirichletMultinomial(count, alphasPost, nOutcomes, engine);
+  int *mnomCounts = rDirichletMultinomial(count, alphasPost, nOutcomes,
+                                          approximate_dmnom, engine);
   delete[] alphasPost;
 
   // Add any terminated ballots to the output.
@@ -161,9 +166,11 @@ std::list<IRVBallot> IRVNode::sample(int count, std::vector<int> path,
     std::swap(path[depth], path[depth + i]);
 
     if (children[i] == nullptr) {
-      temp = lazyIRVBallots(parameters, mnomCounts[i], path, depth + 1, engine);
+      temp = lazyIRVBallots(parameters, mnomCounts[i], path, depth + 1,
+                            approximate_dmnom, engine);
     } else {
-      temp = children[i]->sample(mnomCounts[i], path, engine);
+      temp =
+          children[i]->sample(mnomCounts[i], path, approximate_dmnom, engine);
     }
     std::swap(path[depth], path[depth + i]);
     // Add the samples to the output.

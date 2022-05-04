@@ -25,12 +25,15 @@
  *
  * \param d The dimension of alpha, which is equal to the number of categories.
  *
+ * \param approximate_dmnom A boolean value, if true we skip the multinomial
+ *  sampling step, sacrificing precision for numerical efficiency.
+ *
  * \param engine A PRNG for sampling.
  *
  * \return An array of multinomial counts of dimension d.
  */
 int *rDirichletMultinomial(int count, float *alpha, int d,
-                           std::mt19937 *engine);
+                           bool approximate_dmnom, std::mt19937 *engine);
 
 /*! \brief Draws samples from a Beta distribution.
  *

@@ -76,6 +76,9 @@ public:
    * complete ballots, a path could be a partial permutation which (at a
    * leaf) will realize a complete IRV ballot.
    *
+   * \param approximate_dmnom A boolean value, if true we skip the multinomial
+   *  sampling step, sacrificing precision for numerical efficiency.
+   *
    * \param engine A PRNG used for sampling.
    *
    * \return A list of outcomes corresponding to realizations of the
@@ -83,6 +86,7 @@ public:
    * that this node represents.
    */
   virtual std::list<Outcome> sample(int count, std::vector<int> path,
+                                    bool approximate_dmnom,
                                     std::mt19937 *engine) = 0;
 
   /*! \brief Updates sub-tree parameters to obtain a posterior.

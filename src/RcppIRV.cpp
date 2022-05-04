@@ -196,14 +196,15 @@ public:
     }
   }
 
-  Rcpp::List samplePredictive(unsigned nSamples, std::string seed) {
+  Rcpp::List samplePredictive(unsigned nSamples, bool approximate_dmnom,
+                              std::string seed) {
 
     tree->setSeed(seed);
 
     Rcpp::List out;
     Rcpp::CharacterVector rBallot;
 
-    std::list<IRVBallot> samples = tree->sample(nSamples);
+    std::list<IRVBallot> samples = tree->sample(nSamples, approximate_dmnom);
     for (auto b : samples) {
       rBallot = Rcpp::CharacterVector::create();
       for (auto cIndex : b.preferences) {
@@ -217,6 +218,7 @@ public:
 
   Rcpp::NumericVector samplePosterior(unsigned nElections, unsigned nBallots,
                                       unsigned nWinners, unsigned nBatches,
+                                      bool approximate_dmnom,
                                       std::string seed) {
 
     if (nBallots < nObserved)
@@ -254,7 +256,7 @@ public:
 
       // Simulate elections.
       std::list<std::list<IRVBallot>> elections =
-          tree->posteriorSets(batchSize, nBallots);
+          tree->posteriorSets(batchSize, nBallots, approximate_dmnom);
 
       for (auto e : elections)
         results[i].push_back(socialChoiceIRV(e, nCandidates));

@@ -108,12 +108,16 @@ public:
    * \param n The number of outcomes to sample from a single realisation of the
    * Dirichlet Tree.
    *
+   * \param approximate_dmnom A boolean value, if true we skip the multinomial
+   *  sampling step, sacrificing precision for numerical efficiency.
+   *
    * \param engine An optional warmed-up mt19937 PRNG for randomness.
    *
    * \return A list of outcomes observed from the resulting stochastic
    * process.
    */
-  std::list<Outcome> sample(int n, std::mt19937 *engine = nullptr);
+  std::list<Outcome> sample(int n, bool approximate_dmnom,
+                            std::mt19937 *engine = nullptr);
 
   /*! \brief Sample possible full sets from the posterior.
    *
@@ -130,10 +134,14 @@ public:
    * \param N The number of observations in each complete set (must be >=
    * than the number of observed outcomes).
    *
+   * \param approximate_dmnom A boolean value, if true we skip the multinomial
+   *  sampling step, sacrificing precision for numerical efficiency.
+   *
    * \return Returns `nSets` complete outcome sets sampled from the posterior
    * Dirichlet Tree distribution, using the already observed data.
    */
   std::list<std::list<Outcome>> posteriorSets(int nSets, int N,
+                                              bool approximate_dmnom,
                                               std::mt19937 *engine = nullptr);
 
   // Getters
@@ -216,9 +224,8 @@ float DirichletTree<NodeType, Outcome, Parameters>::marginalProbability(
 }
 
 template <typename NodeType, typename Outcome, typename Parameters>
-std::list<Outcome>
-DirichletTree<NodeType, Outcome, Parameters>::sample(int n,
-                                                     std::mt19937 *engine_) {
+std::list<Outcome> DirichletTree<NodeType, Outcome, Parameters>::sample(
+    int n, bool approximate_dmnom, std::mt19937 *engine_) {
   // Use the default engine unless one is passed to the method.
   if (engine_ == nullptr) {
     engine_ = &engine;
@@ -226,7 +233,7 @@ DirichletTree<NodeType, Outcome, Parameters>::sample(int n,
 
   // Initialize output
   std::vector<int> path = parameters.defaultPath();
-  std::list<Outcome> out = root->sample(n, path, engine_);
+  std::list<Outcome> out = root->sample(n, path, approximate_dmnom, engine_);
 
   return out;
 }
@@ -239,7 +246,7 @@ DirichletTree<NodeType, Outcome, Parameters>::~DirichletTree() {
 template <typename NodeType, typename Outcome, typename Parameters>
 std::list<std::list<Outcome>>
 DirichletTree<NodeType, Outcome, Parameters>::posteriorSets(
-    int nSets, int N, std::mt19937 *engine) {
+    int nSets, int N, bool approximate_dmnom, std::mt19937 *engine) {
 
   // Initialize list of outcomes.
   std::list<std::list<Outcome>> out;
@@ -260,7 +267,7 @@ DirichletTree<NodeType, Outcome, Parameters>::posteriorSets(
     old_outcomes = observed;
 
     // Then sample new outcomes.
-    new_outcomes = sample(N - n, engine);
+    new_outcomes = sample(N - n, approximate_dmnom, engine);
 
     // Combine the two, by appending to the new list.
     out.back().splice(out.back().end(), old_outcomes);
