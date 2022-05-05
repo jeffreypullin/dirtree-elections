@@ -47,8 +47,8 @@ int *rDirichletMultinomial(int count, float *alpha, int d,
     // This results in the sum being less than or equal to count, so we
     // redistribute the difference equally among the probability values
     // which had the highest remainders before 'floor'-ing.
-    rem_idx temp_pair;
     int count_remaining = count;
+    rem_idx temp_pair;
     float unrounded;
     float floor;
     std::vector<rem_idx> sorted_pairs{};
@@ -59,7 +59,7 @@ int *rDirichletMultinomial(int count, float *alpha, int d,
 
       // Floor is the count rounded down
       floor = std::floor(unrounded);
-      temp_pair = {unrounded - floor, i};
+      temp_pair = rem_idx{unrounded - floor, i};
 
       // Update the count with the rounded-down int.
       out[i] = static_cast<int>(floor);
